@@ -111,17 +111,18 @@ android-aab-prepare:android-prepare
 
 .PHONY: generate_kotlin_protos
 generate_kotlin_protos: 
+	@echo "Skipping rsync, doing manual copy..."
 	# Run protoc to generate Kotlin files
 	# protoc \
 	# 	--proto_path=hiddify-core/ \
 	# 	--java_out=./android/app/src/main/java/ \
 	# 	--grpc-java_out=./android/app/src/main/java/ \
-	# 	$(shell find hiddify-core/v2 hiddify-core/extension -name "*.proto")
-	rsync -av --delete \
-		--include='*/' \
-		--include='*.proto' \
-		--exclude='*' \
-		hiddify-core/v2 hiddify-core/extension ./android/app/src/main/protos/
+###	# 	$(shell find hiddify-core/v2 hiddify-core/extension -name "*.proto")
+	# # true # \
+###		--include='*/' \
+###		--include='*.proto' \
+###		--exclude='*' \
+###		hiddify-core/v2 hiddify-core/extension ./android/app/src/main/protos/
 	# # Find .proto files and update package declarations
 	# find "./android/app/src/main/java/com/hiddify/hiddify/protos" -type f -name "*.java" | while read -r proto_file; do \
 	#     if grep -q "^package " "$$proto_file"; then \
@@ -134,7 +135,7 @@ generate_go_protoc:
 	echo "SED: $(SED)"
 generate_dart_protoc:
 	mkdir -p lib/hiddifycore/generated
-	protoc --dart_out=grpc:lib/hiddifycore/generated --proto_path=hiddify-core/  $(shell find hiddify-core/v2 hiddify-core/extension -name "*.proto") 	google/protobuf/timestamp.proto ; \
+###	protoc --dart_out=grpc:lib/hiddifycore/generated --proto_path=hiddify-core/  $(shell find hiddify-core/v2 hiddify-core/extension -name "*.proto") 	google/protobuf/timestamp.proto ; \
 
 .PHONY: protos
 protos: generate_go_protoc generate_kotlin_protos generate_dart_protoc

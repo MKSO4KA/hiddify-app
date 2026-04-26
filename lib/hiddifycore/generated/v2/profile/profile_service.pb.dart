@@ -9,7 +9,7 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'profile.pb.dart' as $4;
+import 'profile.pb.dart' as $5;
 
 import '../hcommon/common.pbenum.dart' as $1;
 
@@ -179,7 +179,7 @@ class AddProfileRequest extends $pb.GeneratedMessage {
 
 class ProfileResponse extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ProfileResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'profile'), createEmptyInstance: create)
-    ..aOM<$4.ProfileEntity>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'profile', subBuilder: $4.ProfileEntity.create)
+    ..aOM<$5.ProfileEntity>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'profile', subBuilder: $5.ProfileEntity.create)
     ..e<$1.ResponseCode>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'responseCode', $pb.PbFieldType.OE, defaultOrMaker: $1.ResponseCode.OK, valueOf: $1.ResponseCode.valueOf, enumValues: $1.ResponseCode.values)
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
     ..hasRequiredFields = false
@@ -187,7 +187,7 @@ class ProfileResponse extends $pb.GeneratedMessage {
 
   ProfileResponse._() : super();
   factory ProfileResponse({
-    $4.ProfileEntity? profile,
+    $5.ProfileEntity? profile,
     $1.ResponseCode? responseCode,
     $core.String? message,
   }) {
@@ -225,15 +225,15 @@ class ProfileResponse extends $pb.GeneratedMessage {
   static ProfileResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $4.ProfileEntity get profile => $_getN(0);
+  $5.ProfileEntity get profile => $_getN(0);
   @$pb.TagNumber(1)
-  set profile($4.ProfileEntity v) { setField(1, v); }
+  set profile($5.ProfileEntity v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasProfile() => $_has(0);
   @$pb.TagNumber(1)
   void clearProfile() => clearField(1);
   @$pb.TagNumber(1)
-  $4.ProfileEntity ensureProfile() => $_ensure(0);
+  $5.ProfileEntity ensureProfile() => $_ensure(0);
 
   @$pb.TagNumber(2)
   $1.ResponseCode get responseCode => $_getN(1);
@@ -256,7 +256,7 @@ class ProfileResponse extends $pb.GeneratedMessage {
 
 class MultiProfilesResponse extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'MultiProfilesResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'profile'), createEmptyInstance: create)
-    ..pc<$4.ProfileEntity>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'profiles', $pb.PbFieldType.PM, subBuilder: $4.ProfileEntity.create)
+    ..pc<$5.ProfileEntity>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'profiles', $pb.PbFieldType.PM, subBuilder: $5.ProfileEntity.create)
     ..e<$1.ResponseCode>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'responseCode', $pb.PbFieldType.OE, defaultOrMaker: $1.ResponseCode.OK, valueOf: $1.ResponseCode.valueOf, enumValues: $1.ResponseCode.values)
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
     ..hasRequiredFields = false
@@ -264,7 +264,7 @@ class MultiProfilesResponse extends $pb.GeneratedMessage {
 
   MultiProfilesResponse._() : super();
   factory MultiProfilesResponse({
-    $core.Iterable<$4.ProfileEntity>? profiles,
+    $core.Iterable<$5.ProfileEntity>? profiles,
     $1.ResponseCode? responseCode,
     $core.String? message,
   }) {
@@ -302,7 +302,7 @@ class MultiProfilesResponse extends $pb.GeneratedMessage {
   static MultiProfilesResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.List<$4.ProfileEntity> get profiles => $_getList(0);
+  $core.List<$5.ProfileEntity> get profiles => $_getList(0);
 
   @$pb.TagNumber(2)
   $1.ResponseCode get responseCode => $_getN(1);
