@@ -53,6 +53,7 @@ class ProfileParser {
   final DioHttpClient _httpClient;
 
   ProfileParser({required Ref ref, required DioHttpClient httpClient}) : _ref = ref, _httpClient = httpClient;
+
   TaskEither<ProfileFailure, ProfileEntriesCompanion> addLocal({
     required String id,
     required String content,
@@ -146,17 +147,14 @@ class ProfileParser {
     String tempFilePath,
     CancelToken? cancelToken,
   ) => TaskEither.tryCatch(() async {
-    // if (url.startsWith("http://"))
-    //   throw const ProfileFailure.invalidUrl('HTTP is not supported. Please use HTTPS for secure connection.');
-
+    print('[HIDDIFY_XHTTP_DEBUG] Fetching subscription profile URL: $url');
     final rs = await _httpClient
         .download(
           url.trim(),
           tempFilePath,
           cancelToken: cancelToken,
-          userAgent: _ref.read(ConfigOptions.useXrayCoreWhenPossible)
-              ? _httpClient.userAgent.replaceAll("HiddifyNext", "HiddifyNextX")
-              : null,
+          // Spoof User-Agent to prevent 3x-ui/Marzban from hiding xhttp nodes from HiddifyNext
+          userAgent: 'v2rayNG/1.8.31',
         )
         .catchError((err) {
           if (CancelToken.isCancel(err as DioException)) {
@@ -164,6 +162,15 @@ class ProfileParser {
           }
           throw err;
         });
+
+    try {
+      final content = await File(tempFilePath).readAsString();
+      final decoded = safeDecodeBase64(content);
+      if (decoded != content) {
+        await File(tempFilePath).writeAsString(decoded);
+      }
+    } catch (_) {}
+
     await expandRemoteLinesInParallel(
       tempFilePath: tempFilePath,
       httpClient: _httpClient,
@@ -176,6 +183,7 @@ class ProfileParser {
       return MapEntry(key, value);
     });
   }, (err, st) => err is ProfileFailure ? err : ProfileFailure.unexpected(err, st));
+
   Future<void> expandRemoteLinesInParallel({
     required String tempFilePath,
     required DioHttpClient httpClient,
@@ -199,22 +207,83 @@ class ProfileParser {
 
         final line = lines[currentIndex];
 
-        // Non-URL
+        // Non-URL Download link (It's a Proxy link or comment)
         if (!line.startsWith('http://') && !line.startsWith('https://')) {
-          results[currentIndex] = line.trim();
+          var processedLine = line.trim();
+          if (processedLine.isEmpty) {
+             results[currentIndex] = processedLine;
+             continue;
+          }
+          print('[HIDDIFY_XHTTP_DEBUG] Raw content line received: $processedLine');
+          
+          if (!processedLine.startsWith('#') && !processedLine.startsWith('//')) {
+            // Explicitly extract the proxy link as if we parsed it manually from clipboard
+            final proxyRegex = RegExp(r'(vless|vmess|trojan|ss|ssconf|tuic|hy2|hysteria2|hy|hysteria|ssh|wg|awg|shadowtls|mieru|warp)://[^\s]+');
+            final match = proxyRegex.firstMatch(processedLine);
+            if (match != null) {
+              processedLine = match.group(0)!;
+              print('[HIDDIFY_XHTTP_DEBUG] Detected Proxy Protocol: ${processedLine.split('://').first}');
+            }
+            
+            // Fix unencoded xhttp external data (ed) which breaks Go's url.Parse
+            if (processedLine.contains('type=xhttp') && processedLine.contains('://')) {
+              print('[HIDDIFY_XHTTP_DEBUG] XHTTP transport found! Processing \'extra\' parameter...');
+              final parts = processedLine.split('?');
+              if (parts.length > 1) {
+                final queryAndHash = parts.sublist(1).join('?');
+                final hashIndex = queryAndHash.indexOf('#');
+                
+                String query;
+                String hashPart = '';
+                
+                if (hashIndex != -1) {
+                  query = queryAndHash.substring(0, hashIndex);
+                  hashPart = queryAndHash.substring(hashIndex);
+                } else {
+                  query = queryAndHash;
+                }
+                
+                final params = query.split('&');
+                final newParams = params.map((p) {
+                  final eqIndex = p.indexOf('=');
+                  if (eqIndex != -1) {
+                    final k = p.substring(0, eqIndex);
+                    final v = p.substring(eqIndex + 1);
+                    try {
+                      final decoded = Uri.decodeComponent(v);
+                      final encoded = Uri.encodeComponent(decoded);
+                      if (v != encoded) {
+                        print('[HIDDIFY_XHTTP_DEBUG] Transformation: [$v] -> [$encoded]');
+                      }
+                      return '$k=$encoded';
+                    } catch (_) {
+                      final encoded = Uri.encodeComponent(v);
+                      print('[HIDDIFY_XHTTP_DEBUG] Transformation (fallback): [$v] -> [$encoded]');
+                      return '$k=$encoded';
+                    }
+                  }
+                  return p;
+                }).join('&');
+                
+                processedLine = '${parts[0]}?$newParams$hashPart';
+                print('[HIDDIFY_XHTTP_DEBUG] Final line result: $processedLine');
+              }
+            }
+          }
+
+          results[currentIndex] = processedLine;
           continue;
         }
 
         try {
           final tmpPath = '$tempFilePath.$currentIndex';
-
+          print('[HIDDIFY_XHTTP_DEBUG] Download started for nested URL: $line');
           await httpClient.download(
             line,
             tmpPath,
             cancelToken: cancelToken,
-            userAgent: ref.read(ConfigOptions.useXrayCoreWhenPossible)
-                ? httpClient.userAgent.replaceAll('HiddifyNext', 'HiddifyNextX')
-                : null,
+            // Spoof User-Agent here as well for recursive fetches
+            userAgent: 'v2rayNG/1.8.31',
           );
 
           results[currentIndex] = (await File(tmpPath).readAsString()).trim();
@@ -448,3 +517,4 @@ class ProfileParser {
     return main;
   }
 }
+

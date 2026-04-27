@@ -148,8 +148,32 @@ dependencies {
     implementation 'io.grpc:grpc-stub:1.64.0'
 //    protoPath(project(':hiddify_api'))
 //    implementation project(':hiddify_api')
+}
 
+// =========================================================
+// ВСТАВЬ ЭТОТ БЛОК В САМЫЙ КОНЕЦ ФАЙЛА
+// =========================================================
+gradle.taskGraph.whenReady { taskGraph ->
+    def totalTasks = taskGraph.allTasks.size()
+    def completedTasks = 0
 
+    // Создаем файлик для твоего бота/чата
+    def progressFile = new File(project.rootDir, "build_progress.txt")
 
+    gradle.taskGraph.addTaskExecutionListener(new TaskExecutionListener() {
+        @Override
+        void beforeExecute(Task task) {}
 
+        @Override
+        void afterExecute(Task task, TaskState state) {
+            completedTasks++
+            def percent = Math.round((completedTasks / totalTasks) * 100)
+
+            // 1. Пробиваемся в CMD сквозь загрузку Flutter (через поток ошибок)
+            System.err.println(">>> [${percent}%] Таска: ${task.name}")
+
+            // 2. Пишем процент в текстовый файл (удобно для отправки в чат)
+            progressFile.text = "${percent}"
+        }
+    })
 }
